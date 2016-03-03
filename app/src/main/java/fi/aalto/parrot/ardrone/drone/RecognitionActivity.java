@@ -47,6 +47,8 @@ public class RecognitionActivity extends AppCompatActivity implements CameraBrid
     public void onResume()
     {
         super.onResume();
+        OpenCVLoader.initDebug();
+        mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         //OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, this, mLoaderCallback);
     }
 
@@ -71,6 +73,6 @@ public class RecognitionActivity extends AppCompatActivity implements CameraBrid
     }
 
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        return inputFrame.rgba();
+        return inputFrame.gray();
     }
 }
