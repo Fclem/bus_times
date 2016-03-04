@@ -10,6 +10,7 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils.*;
 import org.opencv.core.Mat;
 
 public class RecognitionActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
@@ -25,31 +26,8 @@ public class RecognitionActivity extends AppCompatActivity implements CameraBrid
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.HelloOpenCvView);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
-    }
-
-    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
-        @Override
-        public void onManagerConnected(int status) {
-            switch (status) {
-                case LoaderCallbackInterface.SUCCESS:
-                {
-                    mOpenCvCameraView.enableView();
-                } break;
-                default:
-                {
-                    super.onManagerConnected(status);
-                } break;
-            }
-        }
-    };
-
-    @Override
-    public void onResume()
-    {
-        super.onResume();
-        OpenCVLoader.initDebug();
-        mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
-        //OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, this, mLoaderCallback);
+        mOpenCvCameraView.enableView();
+        mOpenCvCameraView.enableFpsMeter();
     }
 
     @Override
@@ -73,6 +51,6 @@ public class RecognitionActivity extends AppCompatActivity implements CameraBrid
     }
 
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        return inputFrame.gray();
+        return inputFrame.rgba();
     }
 }
