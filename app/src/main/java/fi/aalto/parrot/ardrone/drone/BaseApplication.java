@@ -17,6 +17,7 @@ public class BaseApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
+        // TODO: find a way to use async init method
         if(!OpenCVLoader.initDebug()) {
             Log.d(TAG, "Opencv library not found. Exiting");
             Toast.makeText(this, "Opencv library not found. Application will not work properly!", Toast.LENGTH_SHORT);

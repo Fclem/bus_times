@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.SurfaceView;
+import android.view.Window;
 import android.view.WindowManager;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -12,16 +13,27 @@ import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils.*;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
+
+import java.util.List;
+
+import fi.aalto.parrot.ardrone.drone.backend.BlobDetector;
 
 public class RecognitionActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
     private CameraBridgeViewBase mOpenCvCameraView;
+    private BlobDetector blobDetector = new BlobDetector();
+
+    private static final String TAG = "RecognitionActivity";
+    private static final Scalar CONTOUR_COLOUR = new Scalar(255, 0, 0, 255);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_recognition);
 
+        setContentView(R.layout.activity_recognition);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.HelloOpenCvView);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
@@ -51,6 +63,11 @@ public class RecognitionActivity extends AppCompatActivity implements CameraBrid
     }
 
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        return inputFrame.rgba();
+        Mat rgbaImg = inputFrame.rgba();
+        blobDetector.process(rgbaImg);
+        List<MatOfPoint> contours = blobDetector.getContours();
+        Log.w(TAG, contours.size() + " contours found.");
+        Imgproc.drawContours(rgbaImg, contours, -1, CONTOUR_COLOUR);
+        return rgbaImg;
     }
 }
