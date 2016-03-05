@@ -20,30 +20,36 @@ public class BlobDetector {
     private Mat mDBMask = new Mat();
     private Mat mHierarchy = new Mat();
 
-    private Scalar mLowerBound = new Scalar(0, 155, 155, 0);
-    private Scalar mUpperBound = new Scalar(100, 255, 255, 255);
+    // HSV values: 0..179 0..255 0..255
+    private Scalar mLowerBound;
+    private Scalar mUpperBound;
+
+    private double mMinArea = 0.1;
 
     private List<MatOfPoint> mContours = new ArrayList<MatOfPoint>();
+
+    public BlobDetector() {
+        // supposed to be a default red blob detector
+        // TODO: find a better formula for red detection
+        this(new Scalar(0, 130, 50, 0), new Scalar(5, 255, 130, 255));
+    }
+
+    public BlobDetector(Scalar lbound, Scalar ubound) {
+        mLowerBound = lbound;
+        mUpperBound = ubound;
+    }
 
     /* Process an RGBA image to get blobs of interest.
      * Stores a list of contours of the found blobs.
      */
     public void process(Mat rbgaImage) {
-
-        //TODO: do some downsampling here to reduce noise.
-
         Imgproc.cvtColor(rbgaImage, mHsvImg, Imgproc.COLOR_RGB2HSV);
         Core.inRange(mHsvImg, mLowerBound, mUpperBound, mBlobMask);
         Imgproc.dilate(mBlobMask, mDBMask, new Mat());
 
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-        Imgproc.findContours(mDBMask, contours, mHierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
-
-        //TODO: do some contour filtering here
         mContours.clear();
-        Iterator<MatOfPoint> each = contours.iterator();
-        while(each.hasNext())
-            mContours.add(each.next());
+        Imgproc.findContours(mDBMask, mContours, mHierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
     }
 
     public List<MatOfPoint> getContours() {

@@ -27,7 +27,7 @@ public class RecognitionActivity extends AppCompatActivity implements CameraBrid
     private BlobDetector blobDetector = new BlobDetector();
 
     private static final String TAG = "RecognitionActivity";
-    private static final Scalar CONTOUR_COLOUR = new Scalar(255, 0, 0, 255);
+    private static final Scalar CONTOUR_COLOUR = new Scalar(255, 255, 255, 255);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +38,13 @@ public class RecognitionActivity extends AppCompatActivity implements CameraBrid
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.HelloOpenCvView);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
+
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
         mOpenCvCameraView.enableView();
         mOpenCvCameraView.enableFpsMeter();
     }
@@ -66,7 +73,7 @@ public class RecognitionActivity extends AppCompatActivity implements CameraBrid
         Mat rgbaImg = inputFrame.rgba();
         blobDetector.process(rgbaImg);
         List<MatOfPoint> contours = blobDetector.getContours();
-        Log.w(TAG, contours.size() + " contours found.");
+        Log.i(TAG, contours.size() + " contours found.");
         Imgproc.drawContours(rgbaImg, contours, -1, CONTOUR_COLOUR);
         return rgbaImg;
     }
