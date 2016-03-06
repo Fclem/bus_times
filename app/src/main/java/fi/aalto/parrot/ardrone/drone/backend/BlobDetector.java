@@ -42,8 +42,8 @@ public class BlobDetector {
     /* Process an RGBA image to get blobs of interest.
      * Stores a list of contours of the found blobs.
      */
-    public void process(Mat rbgaImage) {
-        Imgproc.cvtColor(rbgaImage, mHsvImg, Imgproc.COLOR_RGB2HSV);
+    public void process(Mat rgbaImage) {
+        Imgproc.cvtColor(rgbaImage, mHsvImg, Imgproc.COLOR_RGB2HSV);
         Core.inRange(mHsvImg, mLowerBound, mUpperBound, mBlobMask);
         Imgproc.dilate(mBlobMask, mDBMask, new Mat());
 
