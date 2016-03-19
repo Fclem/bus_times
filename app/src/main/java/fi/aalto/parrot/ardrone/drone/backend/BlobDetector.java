@@ -1,58 +1,53 @@
 package fi.aalto.parrot.ardrone.drone.backend;
 
+import android.graphics.Color;
+import android.util.Log;
+
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfRect;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.objdetect.CascadeClassifier;
 
+import java.io.IOError;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import fi.aalto.parrot.ardrone.drone.R;
 
 /**
  * Created by sshehata on 3/5/16.
  */
 public class BlobDetector {
 
-    private Mat mHsvImg = new Mat();
-    private Mat mBlobMask = new Mat();
-    private Mat mDBMask = new Mat();
-    private Mat mHierarchy = new Mat();
+    private CascadeClassifier mCascadeDetector;
+    private MatOfRect balls;
 
-    // HSV values: 0..179 0..255 0..255
-    private Scalar mLowerBound;
-    private Scalar mUpperBound;
 
-    private double mMinArea = 0.1;
+    public BlobDetector(String cascadeFile) {
+        mCascadeDetector = new CascadeClassifier(cascadeFile);
+        if (mCascadeDetector.empty())
+            Log.w("Detector", "EMPTYYYYYYYYYYYYYYYYYYYY!");
 
-    private List<MatOfPoint> mContours = new ArrayList<MatOfPoint>();
-
-    public BlobDetector() {
-        // supposed to be a default red blob detector
-        // TODO: find a better formula for red detection
-        this(new Scalar(0, 130, 50, 0), new Scalar(5, 255, 130, 255));
-    }
-
-    public BlobDetector(Scalar lbound, Scalar ubound) {
-        mLowerBound = lbound;
-        mUpperBound = ubound;
     }
 
     /* Process an RGBA image to get blobs of interest.
      * Stores a list of contours of the found blobs.
      */
-    public void process(Mat rgbaImage) {
-        Imgproc.cvtColor(rgbaImage, mHsvImg, Imgproc.COLOR_RGB2HSV);
-        Core.inRange(mHsvImg, mLowerBound, mUpperBound, mBlobMask);
-        Imgproc.dilate(mBlobMask, mDBMask, new Mat());
-
-        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
-        mContours.clear();
-        Imgproc.findContours(mDBMask, mContours, mHierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
+    public void detectAndDisplay(Mat grayscale) {
+        balls = new MatOfRect();
+        mCascadeDetector.detectMultiScale(grayscale, balls);
     }
 
-    public List<MatOfPoint> getContours() {
-        return mContours;
+    public Rect[] getBalls() {
+        return balls.toArray();
     }
 }

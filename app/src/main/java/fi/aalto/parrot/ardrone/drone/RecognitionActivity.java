@@ -1,30 +1,30 @@
 package fi.aalto.parrot.ardrone.drone;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.SurfaceView;
-import android.view.Window;
 import android.view.WindowManager;
 
-import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.LoaderCallbackInterface;
-import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils.*;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-import java.util.List;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import fi.aalto.parrot.ardrone.drone.backend.BlobDetector;
 
 public class RecognitionActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
     private CameraBridgeViewBase mOpenCvCameraView;
-    private BlobDetector blobDetector = new BlobDetector();
+    private BlobDetector blobDetector;
+    private static final Scalar BALL_COLOR = new Scalar(0,255,0);
 
     private static final String TAG = "RecognitionActivity";
     private static final Scalar CONTOUR_COLOUR = new Scalar(255, 255, 255, 255);
@@ -32,6 +32,25 @@ public class RecognitionActivity extends AppCompatActivity implements CameraBrid
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        try {
+            InputStream is = getResources().openRawResource(R.raw.detector);
+            File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
+            File cascadeFile = new File(cascadeDir, "detector.xml");
+            FileOutputStream os = new FileOutputStream(cascadeFile);
+
+            byte[] buffer = new byte[4096];
+            int bytesRead = 0;
+            while((bytesRead = is.read(buffer)) != -1)
+                os.write(buffer, 0, bytesRead);
+            is.close();
+            os.close();
+
+            blobDetector = new BlobDetector(cascadeFile.getAbsolutePath());
+        } catch (IOException e) {
+            Log.w("RecognitionActivity", "Something went wrong!");
+        }
+
 
         setContentView(R.layout.activity_recognition);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -71,10 +90,13 @@ public class RecognitionActivity extends AppCompatActivity implements CameraBrid
 
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         Mat rgbaImg = inputFrame.rgba();
-        blobDetector.process(rgbaImg);
-        List<MatOfPoint> contours = blobDetector.getContours();
-        Log.i(TAG, contours.size() + " contours found.");
-        Imgproc.drawContours(rgbaImg, contours, -1, CONTOUR_COLOUR);
+        if (inputFrame.gray().empty())
+            return rgbaImg;
+        blobDetector.detectAndDisplay(inputFrame.gray());
+        Rect[] ballsArray = blobDetector.getBalls();
+        for(int i = 0; i < ballsArray.length; i++)
+            Imgproc.rectangle(rgbaImg, ballsArray[i].tl(), ballsArray[i].br(), BALL_COLOR, 3);
+
         return rgbaImg;
     }
 }
