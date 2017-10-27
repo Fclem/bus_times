@@ -1,17 +1,18 @@
 package fi.aalto.parrot.ardrone.drone;
 
 import android.content.Context;
+import android.Manifest;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.WindowManager;
+import android.support.v4.content.ContextCompat;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Mat;
-import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
+import org.opencv.objdetect.CascadeClassifier;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,6 +24,10 @@ import fi.aalto.parrot.ardrone.drone.backend.BlobDetector;
 public class RecognitionActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
     private CameraBridgeViewBase mOpenCvCameraView;
+    private String face_cascade_name = "haarcascade_frontalface_alt.xml";
+    private CascadeClassifier face;
+    //private RNG rng(12345);
+
     private BlobDetector blobDetector;
     private static final Scalar BALL_COLOR = new Scalar(0,255,0);
 
@@ -32,6 +37,8 @@ public class RecognitionActivity extends AppCompatActivity implements CameraBrid
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        int permissionCheck = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.CAMERA);
 
         try {
             InputStream is = getResources().openRawResource(R.raw.detector);
@@ -66,6 +73,9 @@ public class RecognitionActivity extends AppCompatActivity implements CameraBrid
         super.onResume();
         mOpenCvCameraView.enableView();
         mOpenCvCameraView.enableFpsMeter();
+
+        super.onResume();
+        //OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_6, this, mLoaderCallback);
     }
 
     @Override
@@ -92,11 +102,13 @@ public class RecognitionActivity extends AppCompatActivity implements CameraBrid
         Mat rgbaImg = inputFrame.rgba();
         if (inputFrame.gray().empty())
             return rgbaImg;
-        blobDetector.detectAndDisplay(inputFrame.gray());
-        Rect[] ballsArray = blobDetector.getBalls();
+        /*
+         blobDetector.detectAndDisplay(inputFrame.gray());
+
+        //Rect[] ballsArray = blobDetector.getBalls();
         for(int i = 0; i < ballsArray.length; i++)
             Imgproc.rectangle(rgbaImg, ballsArray[i].tl(), ballsArray[i].br(), BALL_COLOR, 3);
-
+        */
         return rgbaImg;
     }
 }
